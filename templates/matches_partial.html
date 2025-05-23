@@ -1,0 +1,51 @@
+{% macro render_match(match) %}
+<div class="match-card" id="match-{{ match.user.id }}">
+    {% if match.status == 'new' %}
+    <div class="match-badge new">New Match</div>
+    {% elif match.status == 'pending' %}
+    <div class="match-badge pending">Pending</div>
+    {% elif match.status == 'connected' %}
+    <div class="match-badge connected">Connected</div>
+    {% endif %}
+    
+    <img src="{{ match.user.profile_image or url_for('static', filename='images/default-avatar.png') }}" alt="{{ match.user.name }}" class="match-user-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+    <h3>{{ match.user.name }}</h3>
+    
+    <div class="personality-container">
+        <span class="personality-type">{{ match.user.personality_type }}</span>
+        <p class="personality-style">{{ match.user.style_description }}</p>
+    </div>
+    
+    <div class="skill-level">
+        <span class="skill {{ match.user.skill_level|lower|default('beginner') }}">{{ match.user.skill_level|default('Beginner') }}</span>
+    </div>
+    
+    <div class="specialties">
+        {% if match.user.specialties %}
+            {% for specialty in match.user.specialties %}
+            <span class="specialty {{ specialty|lower|replace(' ', '-') }}">{{ specialty }}</span>
+            {% endfor %}
+        {% else %}
+            <span class="specialty general">General Style</span>
+        {% endif %}
+    </div>
+    
+    <div class="compatibility">
+        <p class="compatibility-percent">{{ match.compatibility_score }}% Match</p>
+        <p class="compatibility-reason">{{ match.compatibility_reason }}</p>
+    </div>
+    
+    {% if match.status == 'connected' %}
+    <button class="btn message-btn" data-user-id="{{ match.user.id }}" aria-label="Message {{ match.user.name }}">Message</button>
+    {% elif match.status == 'pending' %}
+    <button class="btn connect-btn pending-btn" disabled aria-label="Connection pending">Pending</button>
+    {% else %}
+    <form class="connect-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+        <input type="hidden" name="action" value="connect">
+        <input type="hidden" name="receiver_id" value="{{ match.user.id }}">
+        <button type="submit" class="btn connect-btn" aria-label="Connect with {{ match.user.name }}">Connect</button>
+    </form>
+    {% endif %}
+</div>
+{% endmacro %}

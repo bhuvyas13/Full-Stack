@@ -1,0 +1,124 @@
+<!-- templates/scrapbook_flipbook.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ journal }} - Digital Scrapbook (Flipbook View){% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scrapbook.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="scrapbook-container">
+    <h2 class="page-title">{{ journal }} Scrapbook</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <!-- Upload form -->
+    <div class="upload-form">
+        <form action="{{ url_for('upload_to_journal', journal=journal_name) }}" method="POST" enctype="multipart/form-data" id="upload-form">
+            <input type="file" name="image" id="file-input" required>
+            <input type="text" name="caption" placeholder="Caption (optional)" class="caption-input">
+            <button type="submit" class="upload-button">Upload Page</button>
+        </form>
+        <div id="loading-indicator">Uploading... Please wait.</div>
+    </div>
+
+    {% if images|length > 0 %}
+    <!-- Flipbook controls -->
+    <div class="controls">
+        <button class="control-btn" id="prev-btn">Previous</button>
+        <span id="page-num">Page 1 of {{ images|length }}</span>
+        <button class="control-btn" id="next-btn">Next</button>
+    </div>
+    
+    <!-- Flipbook container -->
+    <div id="flipbook">
+        {% for img in images %}
+        <div>
+            <div class="page-content">
+                <img src="{{ url_for('static', filename=img.filepath) }}" alt="Scrapbook image">
+                <div class="caption">{{ img.caption }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-pages">No pages yet! Upload your first image to start your scrapbook.</p>
+    {% endif %}
+    
+    <!-- View controls -->
+    <div class="view-controls">
+        <a href="{{ url_for('view_scrapbook', journal=journal_name) }}?mode=standard" class="mode-switch">View as Gallery</a>
+        <a href="{{ url_for('journals_index') }}" class="back-link">Back to Journals</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Check if we have any images before initializing turn.js
+        if ($("#flipbook > div").length > 0) {
+            try {
+                // Initialize the flipbook
+                $("#flipbook").turn({
+                    width: 800,
+                    height: 600,
+                    autoCenter: true,
+                    elevation: 50,
+                    gradients: true,
+                    when: {
+                        turning: function(e, page, view) {
+                            // Update page number display
+                            $("#page-num").text(`Page ${page} of ${$("#flipbook > div").length}`);
+                        }
+                    }
+                });
+                
+                // Button controls
+                $("#prev-btn").click(function() {
+                    $("#flipbook").turn("previous");
+                });
+                
+                $("#next-btn").click(function() {
+                    $("#flipbook").turn("next");
+                });
+                
+                // Keyboard navigation
+                $(document).keydown(function(e) {
+                    if (e.keyCode == 37) { // left arrow
+                        $("#flipbook").turn("previous");
+                    } else if (e.keyCode == 39) { // right arrow
+                        $("#flipbook").turn("next");
+                    }
+                });
+                
+                console.log("Flipbook initialized successfully");
+            } catch (error) {
+                console.error("Error initializing flipbook:", error);
+                // Fallback to simple display
+                $("#flipbook").css({
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "justifyContent": "center",
+                    "gap": "20px"
+                });
+                $(".controls").hide();
+            }
+        }
+        
+        // Handle form submission with loading indicator
+        $("#upload-form").on("submit", function() {
+            $("#loading-indicator").show();
+        });
+    });
+</script>
+{% endblock %}

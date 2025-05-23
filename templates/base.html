@@ -1,0 +1,49 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}वस्त्रनीति - Vastraniti{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="workspace">
+        <!-- Large site title like in home.html -->
+        <div class="site-title" id="site-title">
+            <h1>वस्त्रनीति</h1>
+        </div>
+        
+        <header class="site-header">
+            <div class="header-container">
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="{{ url_for('home_page') }}">Home</a></li>
+                        <li><a href="{{ url_for('news') }}">News</a></li>
+                        <li><a href="{{ url_for('scrapbook') }}">Scrapbook</a></li>
+                        <li><a href="{{ url_for('lookbook') }}">Personality Test</a></li>
+                        <li><a href="{{ url_for('events') }}">Connect & Style</a></li>
+
+                        <li><a href="{{ url_for('shop') }}">Market</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+        
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <footer class="site-footer">
+            <div class="footer-container">
+                <p>&copy; 2025 वस्त्रनीति. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

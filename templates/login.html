@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up - Vastraniti</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <style>
+    /* Critical CSS fixes to prevent polaroid collapse */
+    .polaroid {
+        background-color: white;
+        padding: 20px 20px 60px 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: rotate(-2deg);
+        max-width: 300px;
+        position: relative;
+        /* Added min dimensions to prevent collapse */
+        min-width: 250px;
+        min-height: 380px;
+    }
+
+    /* Force polaroid image area to maintain dimensions */
+    .polaroid-image {
+        width: 100%;
+        height: 300px !important; /* Force this height */
+        background-color: #333;
+        display: block !important; /* Never hide this element */
+        position: relative;
+        overflow: hidden;
+        /* Added min dimensions to prevent collapse */
+        min-width: 210px;
+        min-height: 300px;
+    }
+
+    /* Ensure camera container is properly positioned */
+    .camera-container {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: #000;
+        z-index: 10;
+    }
+
+    /* Make video element fill its container */
+    #video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        background-color: #000;
+    }
+
+    /* Ensure camera controls are visible and positioned correctly */
+    .camera-actions {
+        position: absolute !important;
+        bottom: 10px !important;
+        left: 0 !important;
+        right: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        padding: 10px !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+        z-index: 20 !important;
+    }
+
+    /* Make buttons more prominent */
+    .camera-btn {
+        padding: 10px 15px !important;
+        background-color: #4285f4 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 5px !important;
+        font-weight: bold !important;
+        margin: 0 5px !important;
+        min-width: 80px !important;
+        cursor: pointer !important;
+    }
+
+    /* Improve placeholder text visibility */
+    #placeholder-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 16px;
+        text-align: center;
+        width: 80%;
+    }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="polaroid-section">
+            <div class="polaroid">
+                <div class="polaroid-image" id="photoDisplay">
+                    <div id="placeholder-text">Your Photo Will Appear Here</div>
+                    <div class="camera-container">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas"></canvas>
+                        <div class="camera-actions">
+                            <button class="camera-btn" id="captureBtn">Capture</button>
+                            <button class="camera-btn" id="retakeBtn">Retake</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="photo-actions">
+                <button class="photo-btn" id="cameraBtn">
+                    <span class="camera-icon">📷</span> 
+                    Use Camera
+                </button>
+                <button class="photo-btn" id="uploadBtn">
+                    <span class="upload-icon">📂</span>
+                    Upload Photo
+                </button>
+            </div>
+            <input type="file" id="fileInput" style="display: none" accept="image/*">
+            <div class="upload-progress">
+                <div class="upload-progress-bar"></div>
+            </div>
+        </div>
+        <div class="form-section">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="signupTab">Sign Up</button>
+                <button class="auth-tab" id="signinTab">Sign In</button>
+            </div>
+            
+            <h2 class="form-title" id="formTitle">Create Your Account</h2>
+            
+            <div class="step-indicator" id="stepIndicator">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+            
+            <!-- Hidden form field to store photo data -->
+            <input type="hidden" id="photoData" name="photoData">
+            
+            <!-- Sign Up Form -->
+            <form id="signupForm" action="/register" method="post">
+                <!-- Step 1: Basic Info -->
+                <div class="form-step active" id="step1">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-buttons">
+                        <div></div> <!-- Empty div for spacing -->
+                        <button type="button" class="form-btn next-btn" onclick="nextStep(1)">Next</button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Contact Info -->
+                <div class="form-step" id="step2">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" placeholder="Enter your city" required>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="form-btn back-btn" onclick="prevStep(2)">Back</button>
+                        <button type="button" class="form-btn next-btn" onclick="nextStep(2)">Next</button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Styling Preferences -->
+                <div class="form-step" id="step3">
+                    <div class="form-group">
+                        <label>Are you into styling?</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="stylingYes" name="styling" value="yes" required>
+                                <label for="stylingYes">Yes</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="stylingNo" name="styling" value="no">
+                                <label for="stylingNo">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="stylePreference">Style Preference</label>
+                        <select id="stylePreference" name="stylePreference" required>
+                            <option value="" disabled selected>Select your style</option>
+                            <option value="casual">Casual</option>
+                            <option value="formal">Formal</option>
+                            <option value="bohemian">Bohemian</option>
+                            <option value="streetwear">Streetwear</option>
+                            <option value="minimalist">Minimalist</option>
+                        </select>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="form-btn back-btn" onclick="prevStep(3)">Back</button>
+                        <button type="button" class="form-btn next-btn" onclick="nextStep(3)">Next</button>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Password -->
+                <div class="form-step" id="step4">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="form-btn back-btn" onclick="prevStep(4)">Back</button>
+                        <button type="submit" class="form-btn submit-btn">Create Account</button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Sign In Form -->
+            <form id="signinForm" action="/login" method="post" style="display: none;">
+                <div class="form-group">
+                    <label for="signinEmail">Email Address</label>
+                    <input type="email" id="signinEmail" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signinPassword">Password</label>
+                    <input type="password" id="signinPassword" name="password" placeholder="Enter your password" required>
+                </div>
+                <div class="form-group">
+                    <div class="remember-forgot">
+                        <div class="remember-me">
+                            <input type="checkbox" id="rememberMe" name="rememberMe">
+                            <label for="rememberMe">Remember me</label>
+                        </div>
+                        <a href="#" class="forgot-password">Forgot Password?</a>
+                    </div>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="form-btn submit-btn" style="width: 100%;">Sign In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add this script to check browser camera support -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if the browser supports getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.warn('This browser does not support navigator.mediaDevices.getUserMedia');
+            const cameraBtn = document.getElementById('cameraBtn');
+            if (cameraBtn) {
+                cameraBtn.disabled = true;
+                cameraBtn.style.opacity = '0.5';
+                cameraBtn.title = 'Camera not supported in this browser';
+            }
+        } else {
+            console.log('Camera API is supported in this browser');
+        }
+    });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+    <!-- Camera fix script -->
+    <script>
+    // Specific fix for camera button causing polaroid to disappear
+    document.addEventListener('DOMContentLoaded', function() {
+        // First, make sure we have all the required elements
+        const cameraBtn = document.getElementById('cameraBtn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const photoDisplay = document.getElementById('photoDisplay');
+        const placeholderText = document.getElementById('placeholder-text');
+        const cameraContainer = document.querySelector('.camera-container');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        
+        // Check if all elements exist to avoid errors
+        if (!cameraBtn || !video || !photoDisplay || !cameraContainer) {
+            console.error('Critical elements are missing from the DOM');
+            return;
+        }
+        
+        let stream = null;
+        
+        // CRITICAL FIX: Completely rewritten camera button handler
+        cameraBtn.addEventListener('click', async function(e) {
+            // Prevent any default behavior
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log("Camera button clicked - debug mode");
+            
+            try {
+                // 1. First make sure the polaroid doesn't collapse
+                // This is critical - ensure the polaroid-image maintains its dimensions
+                photoDisplay.style.height = '300px';
+                photoDisplay.style.width = '100%';
+                photoDisplay.style.display = 'block';
+                photoDisplay.style.backgroundColor = '#333';
+                
+                // 2. Hide placeholder text but keep the photoDisplay visible
+                if (placeholderText) {
+                    placeholderText.style.display = 'none';
+                }
+                
+                // 3. Make camera container visible first
+                cameraContainer.style.display = 'block';
+                cameraContainer.style.position = 'absolute';
+                cameraContainer.style.top = '0';
+                cameraContainer.style.left = '0';
+                cameraContainer.style.width = '100%';
+                cameraContainer.style.height = '100%';
+                cameraContainer.style.zIndex = '10';
+                
+                // 4. Make camera action buttons visible
+                const cameraActions = document.querySelector('.camera-actions');
+                if (cameraActions) {
+                    cameraActions.style.display = 'flex';
+                    cameraActions.style.zIndex = '20';
+                }
+                
+                // 5. Stop any existing camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => {
+                        track.stop();
+                    });
+                }
+                
+                // 6. Request camera with extremely basic constraints
+                console.log("Requesting camera access with minimal constraints");
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+                
+                console.log("Camera access granted");
+                
+                // 7. Set video source and make it visible
+                video.srcObject = stream;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                video.style.display = 'block';
+                
+                // 8. Force video to play
+                try {
+                    await video.play();
+                    console.log("Video is now playing");
+                } catch (playError) {
+                    console.error("Error playing video:", playError);
+                    alert("Error starting video stream. Please ensure you've granted camera permissions.");
+                }
+                
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                alert('Could not access camera. Please check your browser permissions or try uploading a photo instead.');
+                
+                // Reset the display on error
+                placeholderText.style.display = 'block';
+                cameraContainer.style.display = 'none';
+                video.style.display = 'none';
+            }
+        });
+        
+        // Add this to the capture button in case it's also causing issues
+        captureBtn.addEventListener('click', function() {
+            try {
+                console.log("Capture button clicked");
+                
+                // Check if stream exists
+                if (!stream) {
+                    console.error("No active camera stream");
+                    alert("Camera is not active. Please try again.");
+                    return;
+                }
+                
+                // Create a canvas to capture the photo
+                const context = canvas.getContext('2d');
+                
+                // Set canvas dimensions to match video dimensions
+                canvas.width = video.videoWidth || 320;
+                canvas.height = video.videoHeight || 240;
+                
+                // Draw video to canvas
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Get image data
+                const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Display image in polaroid
+                displayImageInPolaroid(imageDataUrl);
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                
+                // Hide camera elements
+                video.style.display = 'none';
+                cameraContainer.style.display = 'none';
+                
+                console.log("Photo captured successfully");
+            } catch (error) {
+                console.error("Error capturing photo:", error);
+            }
+        });
+        
+        // Helper function to display image in polaroid
+        function displayImageInPolaroid(imageUrl) {
+            try {
+                console.log("Displaying image in polaroid");
+                
+                // Make sure polaroid container stays visible
+                photoDisplay.style.height = '300px';
+                photoDisplay.style.width = '100%';
+                photoDisplay.style.display = 'block';
+                photoDisplay.style.backgroundColor = 'transparent';
+                
+                // Hide placeholder text
+                if (placeholderText) {
+                    placeholderText.style.display = 'none';
+                }
+                
+                // Create image element
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                
+                // Clear previous content and add image
+                photoDisplay.innerHTML = '';
+                photoDisplay.appendChild(img);
+                
+                // Add class for styling
+                photoDisplay.classList.add('has-image');
+                
+                // Store in hidden field for form submission
+                document.getElementById('photoData').value = imageUrl;
+                
+                console.log("Image displayed successfully");
+            } catch (error) {
+                console.error("Error displaying image:", error);
+            }
+        }
+    });
+    </script>
+</body>
+</html>

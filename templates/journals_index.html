@@ -1,0 +1,99 @@
+<!-- templates/journals_index.html -->
+{% extends "base.html" %}
+
+{% block title %}My Digital Scrapbooks{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scrapbook.css') }}">
+<style>
+    /* Additional styles specific to journal index */
+    .journal-list {
+        margin: 30px auto;
+        max-width: 600px;
+    }
+    
+    .journal-link {
+        display: block;
+        margin: 15px auto;
+        padding: 15px;
+        font-size: 1.2rem;
+        color: #333;
+        text-decoration: none;
+        background: #f5f5f5;
+        border-radius: 8px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: center;
+    }
+    
+    .journal-link:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        background: #eee;
+    }
+    
+    .create-form {
+        margin: 20px auto;
+        padding: 20px;
+        max-width: 500px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .create-form input[type="text"] {
+        padding: 10px;
+        width: 70%;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    
+    .create-form button {
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.3s;
+    }
+    
+    .create-form button:hover {
+        background-color: #555;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scrapbook-container">
+    <h2 class="page-title">📔 My Digital Scrapbooks</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="create-form">
+        <h3>Create New Journal</h3>
+        <form action="{{ url_for('create_journal') }}" method="POST">
+            <input type="text" name="journal_name" placeholder="Enter journal name" required>
+            <button type="submit">Create</button>
+        </form>
+    </div>
+    
+    <div class="journal-list">
+        <h3>Your Journals</h3>
+        {% if journals and journals|length > 0 %}
+            {% for journal in journals %}
+                <a href="{{ url_for('view_scrapbook', journal=journal.name) }}" class="journal-link">{{ journal.name }}</a>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #666; font-style: italic;">No journals yet. Create your first journal above!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

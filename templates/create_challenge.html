@@ -1,0 +1,136 @@
+<!-- templates/create_challenge.html -->
+{% extends "base.html" %}
+
+{% block title %}Create Style Challenge - वस्त्रनीति{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+<style>
+    .challenge-form {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #2c2318;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: 'Playfair Display', serif;
+        font-size: 16px;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .file-input-container {
+        position: relative;
+        margin-top: 10px;
+    }
+    
+    .file-input-preview {
+        display: block;
+        width: 100%;
+        height: 200px;
+        border: 2px dashed #ccc;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #888;
+    }
+    
+    .file-input-preview.has-image {
+        color: transparent;
+    }
+    
+    .submit-container {
+        margin-top: 30px;
+        text-align: center;
+    }
+    
+    .submit-btn {
+        padding: 12px 30px;
+        font-size: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-area">
+    <h1 class="page-title">Create a Style Challenge</h1>
+    
+    <form class="challenge-form" action="{{ url_for('events') }}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="create_challenge">
+        
+        <div class="form-group">
+            <label for="challenge_title">Challenge Title</label>
+            <input type="text" id="challenge_title" name="title" class="form-control" required placeholder="e.g., Style my white shirt for three occasions">
+        </div>
+        
+        <div class="form-group">
+            <label for="challenge_description">Challenge Description</label>
+            <textarea id="challenge_description" name="description" class="form-control" required placeholder="Describe what kind of styling help you need. Be specific about the occasions, preferences, or constraints."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="item_image">Upload Item Image</label>
+            <div class="file-input-container">
+                <div class="file-input-preview" id="image-preview">Click to select an image</div>
+                <input type="file" id="item_image" name="item_image" accept="image/*" required style="display: none;">
+                <button type="button" class="btn" id="select-image-btn" style="width: 100%;">Select Image</button>
+            </div>
+        </div>
+        
+        <div class="submit-container">
+            <button type="submit" class="btn submit-btn">Create Challenge</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('item_image');
+        const imagePreview = document.getElementById('image-preview');
+        const selectButton = document.getElementById('select-image-btn');
+        
+        selectButton.addEventListener('click', function() {
+            imageInput.click();
+        });
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.style.backgroundImage = `url(${e.target.result})`;
+                    imagePreview.textContent = '';
+                    imagePreview.classList.add('has-image');
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    });
+</script>
+{% endblock %}

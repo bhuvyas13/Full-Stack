@@ -1,0 +1,143 @@
+<!-- templates/shop.html -->
+{% extends "base.html" %}
+
+{% block title %}Fashion Market Map | Vastraniti{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="shop-container">
+    <h2 class="page-title">Fashion Market Explorer</h2>
+    <p class="sub-heading">Discover hidden gems and popular fashion markets across India</p>
+
+    <div class="map-controls">
+        <div class="search-box">
+            <label for="location-search" class="sr-only">Search markets</label>
+            <input type="text" id="location-search" placeholder="Search by city or market...">
+            <button id="search-btn">Search</button>
+        </div>
+        <div class="filter-controls">
+            <label for="category-filter">Category</label>
+            <select id="category-filter">
+                <option value="all">All Categories</option>
+                <option value="vintage">Vintage</option>
+                <option value="streetwear">Streetwear</option>
+                <option value="ethnic">Ethnic Wear</option>
+                <option value="luxury">Luxury Dupes</option>
+                <option value="accessories">Accessories</option>
+            </select>
+            <label for="price-filter">Price Range</label>
+            <select id="price-filter">
+                <option value="all">Any Price</option>
+                <option value="budget">Budget (Under ₹500)</option>
+                <option value="mid">Mid-Range (₹500-2000)</option>
+                <option value="premium">Premium (₹2000+)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="map-layout">
+        <div id="market-map"></div>
+        
+        <div class="market-sidebar">
+            <div class="sidebar-header">
+                <h3>Market Listings</h3>
+                <button id="add-market-btn">+ Add Market</button>
+            </div>
+            <div id="market-list" class="market-list">
+                <!-- Markets will be loaded here dynamically -->
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading markets...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Market Modal -->
+    <div class="market-modal" id="add-market-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Add New Fashion Market</h2>
+            <form id="market-form">
+                <div class="form-group">
+                    <label for="market-name" class="required">Market Name</label>
+                    <input type="text" id="market-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="market-country">Country (Optional)</label>
+                    <select id="market-country">
+                        <option value="India" selected>India</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="market-state">State (Optional)</label>
+                    <select id="market-state">
+                        <option value="">Select State</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="market-city">City/District (Optional)</label>
+                    <select id="market-city">
+                        <option value="">Select City/District</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                    <p class="hint">Selecting a city will automatically position the pin on the map</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="market-area">Additional Location Info (Optional)</label>
+                    <input type="text" id="market-area" placeholder="e.g., Sarojini Market, Lane 5">
+                </div>
+                <div class="form-group">
+                    <label for="market-category" class="required">Category</label>
+                    <select id="market-category" required>
+                        <option value="">Select a category</option>
+                        <option value="vintage">Vintage</option>
+                        <option value="streetwear">Streetwear</option>
+                        <option value="ethnic">Ethnic Wear</option>
+                        <option value="luxury">Luxury Dupes</option>
+                        <option value="accessories">Accessories</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="market-price" class="required">Price Range</label>
+                    <input type="text" id="market-price" placeholder="e.g., ₹100-500" required>
+                </div>
+                <div class="form-group">
+                    <label for="market-best" class="required">Best For</label>
+                    <input type="text" id="market-best" placeholder="e.g., Vintage jeans, leather jackets" required>
+                </div>
+                <div class="form-group">
+                    <label for="market-tips">Tips & Hidden Gems (Optional)</label>
+                    <textarea id="market-tips" placeholder="Bargaining tips, best stalls, timing advice..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Pin Location on Map (Optional - Auto-set from city selection)</label>
+                    <div id="location-picker-map"></div>
+                    <p class="hint">You can click on the map to set a specific location, or let it be set automatically from your city selection</p>
+                    <input type="hidden" id="market-lat">
+                    <input type="hidden" id="market-lng">
+                </div>
+                <button type="submit" class="submit-btn">Submit Market</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/shop.js') }}"></script>
+<script>
+    console.log('Leaflet loaded:', typeof L !== 'undefined'); // Should show "true"
+    console.log('Map container exists:', document.getElementById('market-map') !== null); // Should show "true"
+</script>
+{% endblock %}

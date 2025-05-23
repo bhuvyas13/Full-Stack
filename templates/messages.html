@@ -1,0 +1,567 @@
+<!-- templates/messages.html -->
+{% extends "base.html" %}
+
+{% block title %}Style Conversations - वस्त्रनीति{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+<style>
+    .messages-container {
+        display: flex;
+        height: 70vh;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 20px 0 40px;
+    }
+    
+    .contacts-sidebar {
+        width: 300px;
+        background: #f9f9f9;
+        border-right: 1px solid #eee;
+        overflow-y: auto;
+    }
+    
+    .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .contact-card {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .contact-card:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .contact-card.active {
+        background-color: #f0f0f0;
+        border-left: 4px solid #2c2318;
+    }
+    
+    .contact-card img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 12px;
+        object-fit: cover;
+    }
+    
+    .contact-info h3 {
+        margin: 0 0 3px;
+        font-size: 15px;
+    }
+    
+    .contact-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #777;
+    }
+    
+    .chat-header {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        background: #fff;
+        display: flex;
+        align-items: center;
+    }
+    
+    .chat-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 15px;
+        object-fit: cover;
+    }
+    
+    .chat-header-info h2 {
+        margin: 0 0 3px;
+        font-size: 18px;
+    }
+    
+    .chat-header-info p {
+        margin: 0;
+        font-size: 13px;
+        color: #777;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f5f5f5;
+    }
+    
+    .message {
+        max-width: 70%;
+        margin-bottom: 15px;
+        clear: both;
+    }
+    
+    .message-sent {
+        float: right;
+        background: #2c2318;
+        color: white;
+        border-radius: 15px 0 15px 15px;
+        padding: 10px 15px;
+    }
+    
+    .message-received {
+        float: left;
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 0 15px 15px 15px;
+        padding: 10px 15px;
+    }
+    
+    .message-time {
+        font-size: 11px;
+        margin-top: 5px;
+        display: block;
+        text-align: right;
+        opacity: 0.7;
+    }
+    
+    .message-form {
+        padding: 15px;
+        background: #fff;
+        border-top: 1px solid #eee;
+        display: flex;
+    }
+    
+    .message-input {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        margin-right: 10px;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .send-btn {
+        border-radius: 25px;
+        padding: 0 20px;
+    }
+    
+    .empty-chat {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        color: #888;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .no-contacts {
+        padding: 20px;
+        text-align: center;
+        color: #888;
+    }
+    
+    /* Flash messages container */
+    .flash-messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        max-width: 300px;
+    }
+    
+    .flash-message {
+        margin-bottom: 10px;
+        padding: 10px 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.3s, fadeOut 0.5s 4.5s;
+        opacity: 1;
+        animation-fill-mode: forwards;
+    }
+    
+    .flash-message.info {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .flash-message.success {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+        border-left: 4px solid #4caf50;
+    }
+    
+    .flash-message.warning {
+        background-color: #fff8e1;
+        color: #ff6f00;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .flash-message.error {
+        background-color: #ffebee;
+        color: #b71c1c;
+        border-left: 4px solid #f44336;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-area">
+    <h1 class="page-title">Style Conversations</h1>
+    
+    <div class="messages-container">
+        <div class="contacts-sidebar">
+            {% if contacts %}
+                {% for contact in contacts %}
+                <div class="contact-card {% if chat_user and contact.id == chat_user.id %}active{% endif %}" data-contact-id="{{ contact.id }}">
+                    <img src="{{ contact.profile_image or url_for('static', filename='images/default-avatar.png') }}" alt="{{ contact.name }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+                    <div class="contact-info">
+                        <h3>{{ contact.name }}</h3>
+                        <p>{{ contact.personality_type }} • {{ contact.last_message_time or 'No messages yet' }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-contacts">
+                <p>No conversations yet. Connect with stylists to start chatting!</p>
+                <a href="{{ url_for('events') }}" class="btn">Find Style Matches</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="chat-container">
+            {% if chat_user %}
+            <div class="chat-header">
+                <img src="{{ chat_user.profile_image or url_for('static', filename='images/default-avatar.png') }}" alt="{{ chat_user.name }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+                <div class="chat-header-info">
+                    <h2>{{ chat_user.name }}</h2>
+                    <p>{{ chat_user.personality_type }} • {{ chat_user.style_description }}</p>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="message {% if message.is_current_user %}message-sent{% else %}message-received{% endif %}">
+                        {{ message.message }}
+                        <span class="message-time">{{ message.created_at }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-messages">No messages yet. Start the conversation!</div>
+                {% endif %}
+            </div>
+            
+            <form class="message-form" id="message-form">
+                <input type="hidden" name="receiver_id" value="{{ chat_user.id }}">
+                <input type="text" name="message" class="message-input" placeholder="Type your message..." required>
+                <button type="submit" class="btn send-btn">Send</button>
+            </form>
+            {% else %}
+            <div class="empty-chat">
+                <p>Select a contact to view your conversation</p>
+                <p>Or <a href="{{ url_for('events') }}">find new style matches</a> to chat with</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Flash messages container -->
+<div class="flash-messages"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize flash messages container
+        const flashContainer = document.querySelector('.flash-messages');
+        
+        // Show flash messages from Flask if any
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    showFlashMessage('{{ message }}', '{{ category }}');
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        // Scroll to the bottom of the chat
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Contact selection
+        const contactCards = document.querySelectorAll('.contact-card');
+        contactCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const contactId = this.getAttribute('data-contact-id');
+                window.location.href = `{{ url_for('events') }}?action=messages&user_id=${contactId}`;
+            });
+        });
+        
+        // Get CSRF token function
+        function getCsrfToken() {
+            // Try to get from a meta tag
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) {
+                return metaToken.getAttribute('content');
+            }
+            
+            // Try to get from hidden input
+            const csrfInput = document.querySelector('input[name="csrf_token"]');
+            if (csrfInput) {
+                return csrfInput.value;
+            }
+            
+            // Try to get from cookie
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith('csrf_token=')) {
+                    return cookie.substring('csrf_token='.length, cookie.length);
+                }
+            }
+            
+            console.warn('CSRF token not found');
+            return '';
+        }
+        
+        // Show a flash message
+        function showFlashMessage(message, type = 'info') {
+            const flashMessage = document.createElement('div');
+            flashMessage.className = `flash-message ${type}`;
+            flashMessage.textContent = message;
+            
+            flashContainer.appendChild(flashMessage);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                flashMessage.style.opacity = '0';
+                setTimeout(() => {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 500);
+            }, 5000);
+        }
+        
+        // Send message form
+        const messageForm = document.getElementById('message-form');
+        if (messageForm) {
+            messageForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const messageInput = this.querySelector('.message-input');
+                const message = messageInput.value.trim();
+                const receiverId = this.querySelector('input[name="receiver_id"]').value;
+                
+                if (!message || !receiverId) {
+                    return;
+                }
+                
+                const submitButton = this.querySelector('.send-btn');
+                submitButton.disabled = true;
+                messageInput.disabled = true;
+                
+                // Get CSRF token
+                const csrfToken = getCsrfToken();
+                
+                fetch('{{ url_for("events") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        action: 'send_message',
+                        receiver_id: receiverId,
+                        message: message
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Add the message to the chat
+                        const newMessage = document.createElement('div');
+                        newMessage.className = 'message message-sent';
+                        
+                        // Sanitize message to prevent XSS
+                        const sanitizedMessage = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        
+                        newMessage.innerHTML = `
+                            ${sanitizedMessage}
+                            <span class="message-time">Just now</span>
+                        `;
+                        
+                        // Remove "no messages" div if it exists
+                        const noMessages = chatMessages.querySelector('.no-messages');
+                        if (noMessages) {
+                            noMessages.remove();
+                        }
+                        
+                        chatMessages.appendChild(newMessage);
+                        
+                        // Clear input and scroll to bottom
+                        messageInput.value = '';
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        // Show success message
+                        showFlashMessage('Message sent successfully', 'success');
+                    } else {
+                        showFlashMessage(data.error || 'Failed to send message. Please try again.', 'error');
+                    }
+                    
+                    submitButton.disabled = false;
+                    messageInput.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                    showFlashMessage('An error occurred. Please try again.', 'error');
+                    submitButton.disabled = false;
+                    messageInput.disabled = false;
+                });
+            });
+        }
+        
+        // Fix missing images
+        function fixMissingImages() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                if (!img.hasAttribute('data-error-handled')) {
+                    img.setAttribute('data-error-handled', 'true');
+                    
+                    // Check if src is invalid
+                    const isSrcInvalid = !img.src || 
+                                        img.src === 'null' || 
+                                        img.src === 'undefined' || 
+                                        img.src === window.location.href ||
+                                        img.src.endsWith('/null') ||
+                                        img.src.endsWith('/undefined');
+                    
+                    if (isSrcInvalid) {
+                        img.src = '{{ url_for('static', filename='images/default-avatar.png') }}';
+                    }
+                    
+                    // Add error handler
+                    img.onerror = function() {
+                        if (this.src !== '{{ url_for('static', filename='images/default-avatar.png') }}') {
+                            this.src = '{{ url_for('static', filename='images/default-avatar.png') }}';
+                            this.onerror = null; // Prevent infinite loop
+                        }
+                    };
+                }
+            });
+        }
+        
+        // Run image fix
+        fixMissingImages();
+        
+        // Poll for new messages every 30 seconds if chat is active
+        let messagePolling;
+        
+        function startMessagePolling() {
+            if (chatMessages && '{{ chat_user.id if chat_user else "" }}') {
+                const receiverId = '{{ chat_user.id if chat_user else "" }}';
+                if (receiverId) {
+                    messagePolling = setInterval(function() {
+                        fetchNewMessages(receiverId);
+                    }, 30000); // Poll every 30 seconds
+                }
+            }
+        }
+        
+        function fetchNewMessages(userId) {
+            // Get CSRF token
+            const csrfToken = getCsrfToken();
+            
+            fetch('{{ url_for("events") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    action: 'get_messages',
+                    user_id: userId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.messages) {
+                    updateMessages(data.messages);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching messages:', error);
+            });
+        }
+        
+        function updateMessages(messages) {
+            if (!chatMessages || !messages.length) return;
+            
+            // Clear existing messages
+            chatMessages.innerHTML = '';
+            
+            // Add all messages
+            messages.forEach(message => {
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${message.is_current_user ? 'message-sent' : 'message-received'}`;
+                
+                // Sanitize message
+                const sanitizedMessage = message.message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                messageEl.innerHTML = `
+                    ${sanitizedMessage}
+                    <span class="message-time">${message.created_at}</span>
+                `;
+                
+                chatMessages.appendChild(messageEl);
+            });
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Start polling
+        startMessagePolling();
+        
+        // Clean up when page is closed or navigated away
+        window.addEventListener('beforeunload', function() {
+            if (messagePolling) {
+                clearInterval(messagePolling);
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+<!-- templates/scrapbook.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ journal }} - Digital Scrapbook{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scrapbook.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="scrapbook-container">
+    <h2 class="page-title">{{ journal }} Scrapbook</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <!-- Debug Info - can be removed in production -->
+    <div class="debug-info">
+      <p><strong>Debug Info:</strong> Journal name: "{{ journal }}", Internal name: <span id="journal-safe-name">{{ journal_name }}</span></p>
+    </div>
+    
+    <!-- Book container for scrolling through images -->
+    <div class="book-container">
+        {% for img in images %}
+        <div class="page">
+            <img src="{{ url_for('static', filename=img.filepath) }}" class="scrap-img" alt="Scrapbook image">
+            <div class="caption-container">{{ img.caption }}</div>
+        </div>
+        {% endfor %}
+        
+        <!-- Upload page -->
+        <div class="upload-page" id="drop-area" data-journal="{{ journal_name }}">
+            <div class="upload-icon">+</div>
+            <p>Drag & drop image<br>or click to upload</p>
+            <input type="file" id="fileElem" accept="image/*" style="display:none">
+            <button type="button" id="fileSelect">Select Image</button>
+        </div>
+    </div>
+    
+    <!-- View controls -->
+    <div class="view-controls">
+        <a href="{{ url_for('view_scrapbook', journal=journal_name) }}?mode=flipbook" class="mode-switch">View as Flipbook</a>
+        <a href="{{ url_for('journals_index') }}" class="back-link">Back to Journals</a>
+    </div>
+    
+    <!-- Loading and error indicators -->
+    <div id="message-container"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // File upload handling with drag and drop
+        let dropArea = document.getElementById('drop-area');
+        let fileSelect = document.getElementById('fileSelect');
+        let fileElem = document.getElementById('fileElem');
+        
+        fileSelect.addEventListener('click', function(e) {
+            if (fileElem) {
+                fileElem.click();
+            }
+        });
+        
+        fileElem.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // Prevent defaults for drag events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        }
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        }
+        
+        function uploadFile(file) {
+            let journal = dropArea.getAttribute('data-journal');
+            let url = `/upload/${journal}`;
+            let formData = new FormData();
+            formData.append('image', file);
+            
+            // Show loading message
+            $('#message-container').html('<p style="text-align:center;color:#666;font-style:italic;">Uploading... Please wait.</p>');
+            
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Reload the page to show the new image
+                    window.location.reload();
+                },
+                error: function(xhr, status, error) {
+                    $('#message-container').html(`<p style="text-align:center;color:#a00;">Error: ${error}</p>`);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

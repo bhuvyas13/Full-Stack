@@ -1,0 +1,241 @@
+{% from "matches_partial.html" import render_match %}
+
+{% extends "base.html" %}
+
+{% block title %}Connect & Style - वस्त्रनीति{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
+{% block content %}
+<div class="events-container">
+    <h1 class="page-title">Connect & Style</h1>
+    
+    <div class="events-intro">
+        <p>Find your perfect style match based on personality compatibility. Connect with stylists who understand your aesthetic preferences or offer your expertise to those seeking guidance.</p>
+        
+        <div class="role-selector">
+            <button class="role-btn active" data-role="challenges" aria-pressed="true">Style Challenges</button>
+            <button class="role-btn" data-role="matches" aria-pressed="false">Compatible Matches</button>
+            <button class="role-btn" data-role="requests" aria-pressed="false">Style Requests</button>
+        </div>
+    </div>
+    
+    <!-- Style Challenges Section -->
+    <div class="style-challenges section active" id="challenges-section">
+        <h2 class="section-title">Style Challenges</h2>
+        <p class="section-intro">Help style one item three different ways. Anyone can volunteer to help!</p>
+        
+        <div class="challenges-container">
+            {% if challenges %}
+                {% for challenge in challenges %}
+                <div class="challenge-card" id="challenge-{{ challenge.id }}">
+                    <div class="challenge-user">
+                        <img src="{{ challenge.user.profile_image or url_for('static', filename='images/default-avatar.png') }}" alt="{{ challenge.user.name }}" class="challenge-user-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+                        <div class="user-info">
+                            <h3>{{ challenge.user.name }}</h3>
+                            <span class="personality">{{ challenge.user.personality_type }} - {{ challenge.user.style_description }}</span>
+                        </div>
+                    </div>
+                    <div class="challenge-content">
+                        <img src="{{ challenge.item_image or url_for('static', filename='images/default-item.png') }}" alt="{{ challenge.title }}" class="challenge-item-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-item.png') }}'">
+                        <p>{{ challenge.description }}</p>
+                    </div>
+                    <div class="challenge-comments">
+                        <h4>Styling Suggestions ({{ challenge.suggestions|length }})</h4>
+                        
+                        {% if challenge.suggestions %}
+                        <div class="suggestions-list">
+                            {% for suggestion in challenge.suggestions %}
+                            <div class="suggestion" id="suggestion-{{ suggestion.id }}">
+                                <div class="suggestion-user">
+                                    <img src="{{ suggestion.user.profile_image or url_for('static', filename='images/default-avatar.png') }}" alt="{{ suggestion.user.name }}" class="suggestion-user-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+                                    <span>{{ suggestion.user.name }}</span>
+                                </div>
+                                <p class="suggestion-text">{{ suggestion.text }}</p>
+                                <div class="suggestion-actions">
+                                    <span class="suggestion-time">{{ suggestion.created_at }}</span>
+                                    {% if suggestion.can_like %}
+                                    <button class="like-suggestion-btn" data-suggestion-id="{{ suggestion.id }}" aria-label="Like this suggestion">I like this!</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="no-suggestions">No suggestions yet. Be the first to help!</p>
+                        {% endif %}
+                        
+                        <form class="add-suggestion-form" data-challenge-id="{{ challenge.id }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                            <input type="hidden" name="action" value="add_suggestion">
+                            <input type="hidden" name="challenge_id" value="{{ challenge.id }}">
+                            <textarea name="suggestion_text" placeholder="Share your styling suggestion..." required aria-label="Your styling suggestion"></textarea>
+                            <button type="submit" class="btn submit-suggestion-btn">Add Suggestion</button>
+                        </form>
+                    </div>
+                    <div class="challenge-footer">
+                        <button class="btn volunteer-btn" data-challenge-id="{{ challenge.id }}" aria-label="Volunteer to help with this challenge">Volunteer to Help</button>
+                        <span class="challenge-time">Posted {{ challenge.created_at }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-challenges">
+                <p>No style challenges yet. Be the first to create one!</p>
+                <a href="javascript:void(0);" class="btn create-challenge-btn" role="button">Create Challenge</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if challenges %}
+        <div class="text-center mt-30">
+            <a href="javascript:void(0);" class="btn create-challenge-btn" role="button">Create Your Own Challenge</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Compatible Matches Section -->
+    <div class="style-matches section" id="matches-section">
+        <h2 class="section-title">Compatible Matches</h2>
+        <p class="section-intro">Connect with compatible style partners who match your style preferences.</p>
+        
+        <div class="matches-container">
+            {% if style_matches %}
+                {% for match in style_matches %}
+                    {% if match.user.personality_type and match.user.personality_type != "Unknown" %}
+                        {{ render_match(match) }}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+            <div class="no-matches">
+                <p>No compatible matches available yet. Complete your style test to find matches!</p>
+                <a href="{{ url_for('lookbook') }}" class="btn edit-profile-btn">Take Style Test</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Style Requests Section -->
+    <div class="style-requests section" id="requests-section">
+        <h2 class="section-title">Style Requests</h2>
+        <p class="section-intro">Browse and respond to style help requests from the community.</p>
+        
+        <div class="requests-container">
+            {% if style_requests %}
+                {% for request in style_requests %}
+                <div class="request-card" id="request-{{ request.id }}">
+                    <div class="request-user">
+                        <img src="{{ request.user.profile_image or url_for('static', filename='images/default-avatar.png') }}" alt="{{ request.user.name }}" class="request-user-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+                        <div class="user-info">
+                            <h3>{{ request.user.name }}</h3>
+                            <span class="personality">{{ request.user.personality_type }} - {{ request.user.style_description }}</span>
+                        </div>
+                    </div>
+                    <div class="request-content">
+                        <h4>{{ request.title }}</h4>
+                        <p>{{ request.description }}</p>
+                    </div>
+                    <div class="request-footer">
+                        <button class="btn respond-btn" data-request-id="{{ request.id }}" aria-label="Respond to this request">Respond</button>
+                        <span class="request-time">Posted {{ request.created_at }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-requests">
+                <p>No style requests yet. Create one to get help from the community!</p>
+                <a href="javascript:void(0);" class="btn create-request-btn" role="button">Create Request</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if style_requests %}
+        <div class="text-center mt-30">
+            <a href="javascript:void(0);" class="btn create-request-btn" role="button">Create Your Own Request</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Flash messages container -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message {{ category }}" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</div>
+
+<!-- Message modal template (hidden by default) -->
+<div id="message-modal-template" style="display: none;">
+    <div class="modal message-modal" role="dialog" aria-labelledby="message-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <span class="close-modal" aria-label="Close">&times;</span>
+            <h3 id="message-modal-title">Send Message</h3>
+            <div class="message-container">
+                <div class="message-history" id="message-history" aria-live="polite">
+                    <p class="loading-messages">Loading messages...</p>
+                </div>
+                <div class="message-input">
+                    <form id="send-message-form">
+                        <input type="hidden" name="receiver_id" value="">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                        <textarea name="message" placeholder="Type your message here..." required aria-label="Your message"></textarea>
+                        <button type="submit" class="btn">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Request Modal -->
+<div id="create-request-modal-template" style="display: none;">
+    <div class="modal request-modal" role="dialog" aria-labelledby="request-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <span class="close-modal" aria-label="Close">&times;</span>
+            <h3 id="request-modal-title">Create Style Request</h3>
+            <form id="create-request-form">
+                <input type="hidden" name="action" value="create_request">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                
+                <div class="form-group">
+                    <label for="request-title">Request Title</label>
+                    <input type="text" id="request-title" name="title" required maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="request-description">Description</label>
+                    <textarea id="request-description" name="description" rows="4" required maxlength="1000"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="request-category">Category</label>
+                    <select id="request-category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="outfit">Complete Outfit Help</option>
+                        <option value="accessory">Accessory Styling</option>
+                        <option value="occasion">Occasion-specific Styling</option>
+                        <option value="shopping">Shopping Advice</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">Submit Request</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/events.js') }}"></script>
+{% endblock %}

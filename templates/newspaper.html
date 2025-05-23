@@ -1,0 +1,75 @@
+<!-- templates/newspaper.html -->
+{% extends "base.html" %}
+
+{% block title %}वस्त्रनीति - Fashion News{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/newspaper.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Main Content Section -->
+<div class="container">
+    <!-- Header with title -->
+    <header>
+        <div class="header-line"></div>
+        <div class="header-line"></div>
+    </header>
+         
+    <!-- Main Content Section -->
+    <main id="news-content">
+        <div class="loading-container">
+            <div class="loading">Loading latest fashion news...</div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include JavaScript files -->
+<script src="{{ url_for('static', filename='js/newspaper.js') }}"></script>
+     
+<!-- Debug helper script (only visible with ?debug=true) -->
+<script>
+    // Show console logs in the debug panel (for mobile debugging)
+    const urlParams = new URLSearchParams(window.location.search);
+    const debug = urlParams.get('debug');
+             
+    if (debug === 'true') {
+        const debugPanel = document.createElement('div');
+        debugPanel.id = 'debug-info';
+        debugPanel.style = 'padding: 20px; margin-top: 30px; background: #f8f8f8; border-top: 1px solid #ddd;';
+                     
+        const debugTitle = document.createElement('h3');
+        debugTitle.textContent = 'Debug Information';
+                     
+        const debugContent = document.createElement('div');
+        debugContent.id = 'debug-content';
+                     
+        debugPanel.appendChild(debugTitle);
+        debugPanel.appendChild(debugContent);
+        document.body.appendChild(debugPanel);
+                     
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+                     
+        console.log = function() {
+            originalConsoleLog.apply(console, arguments);
+            const args = Array.from(arguments);
+            const logItem = document.createElement('div');
+            logItem.innerHTML = `<span style="color: green;">LOG:</span> ${args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}`;
+            debugContent.appendChild(logItem);
+        };
+                     
+        console.error = function() {
+            originalConsoleError.apply(console, arguments);
+            const args = Array.from(arguments);
+            const logItem = document.createElement('div');
+            logItem.innerHTML = `<span style="color: red;">ERROR:</span> ${args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}`;
+            debugContent.appendChild(logItem);
+        };
+                     
+        console.log('Debug mode activated');
+    }
+</script>
+{% endblock %}

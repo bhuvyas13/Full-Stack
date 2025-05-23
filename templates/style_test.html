@@ -1,0 +1,211 @@
+<!-- templates/style_test.html -->
+{% extends "base.html" %}
+
+{% block title %}Style Personality Test - वस्त्रनीति{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style_test.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <h2 class="page-title">Style Personality Test</h2>
+    <p class="intro-subtitle">Discover your unique fashion identity through our 16-question assessment</p>
+
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text">Question <span id="current-question">1</span> of 16</div>
+    </div>
+
+    <div id="intro-section">
+        <div class="intro-content">
+            <h2>Discover Your Style Personality</h2>
+            <p>Just as your personality shapes how you interact with the world, your style personality influences how you express yourself through fashion.</p>
+            <p>This assessment will help identify your natural fashion preferences across four key dimensions:</p>
+            
+            <div class="dimensions">
+                <div class="dimension">
+                    <h3>Bold vs. Subtle</h3>
+                    <p>How much visual impact you prefer your style to have</p>
+                </div>
+                <div class="dimension">
+                    <h3>Structured vs. Flowing</h3>
+                    <p>Your preference for tailored precision or organic drape</p>
+                </div>
+                <div class="dimension">
+                    <h3>Classic vs. Innovative</h3>
+                    <p>Your approach to tradition versus experimentation</p>
+                </div>
+                <div class="dimension">
+                    <h3>Minimal vs. Expressive</h3>
+                    <p>The level of detail and visual interest you prefer</p>
+                </div>
+            </div>
+            
+            <p>There are no right or wrong answers—only what resonates most authentically with you.</p>
+            <button id="start-test" class="primary-button">Begin the Test</button>
+        </div>
+    </div>
+
+    <div id="question-section" style="display: none;">
+        <div id="question-content"></div>
+        <div class="question-options">
+            <button class="option-button" id="option-a">Option A</button>
+            <button class="option-button" id="option-b">Option B</button>
+        </div>
+        <div class="nav-buttons">
+            <button id="prev-button" class="secondary-button" disabled>Previous</button>
+            <button id="next-button" class="primary-button" disabled>Next</button>
+        </div>
+    </div>
+
+    <div id="results-section" style="display: none;">
+        <h2>Your Style Personality Results</h2>
+        <div class="results-content">
+            <div class="style-type-header">
+                <div class="style-code" id="style-code">BTCM</div>
+                <h3 class="style-personality" id="style-personality">The Refined Minimalist</h3>
+            </div>
+            
+            <div class="results-image-container">
+                <img id="personality-image" src="" alt="Your Style Personality" class="results-image">
+            </div>
+            
+            <div class="mbti-match">
+                <h4>MBTI Correlation:</h4>
+                <p id="mbti-match">ENTJ "The Commander"</p>
+            </div>
+            
+            <div class="results-details">
+                <div class="traits-container">
+                    <h4>Key Fashion Traits:</h4>
+                    <p id="key-traits">Bold structured silhouettes with classic, minimal details</p>
+                </div>
+                
+                <div class="characteristics-container">
+                    <h4>Style Characteristics:</h4>
+                    <p id="characteristics">Strategic efficiency, commanding presence, disciplined approach, preference for proven solutions</p>
+                </div>
+            </div>
+            
+            <div class="dimension-results">
+                <h4>Your Style Dimensions:</h4>
+                <div class="dimension-bars">
+                    <div class="dimension-bar">
+                        <div class="dimension-label">
+                            <span>Bold</span>
+                            <span>Subtle</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bold-subtle-bar"></div>
+                        </div>
+                        <div class="percentage" id="bold-subtle-percentage"></div>
+                    </div>
+                    
+                    <div class="dimension-bar">
+                        <div class="dimension-label">
+                            <span>Structured</span>
+                            <span>Flowing</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="structured-flowing-bar"></div>
+                        </div>
+                        <div class="percentage" id="structured-flowing-percentage"></div>
+                    </div>
+                    
+                    <div class="dimension-bar">
+                        <div class="dimension-label">
+                            <span>Classic</span>
+                            <span>Innovative</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="classic-innovative-bar"></div>
+                        </div>
+                        <div class="percentage" id="classic-innovative-percentage"></div>
+                    </div>
+                    
+                    <div class="dimension-bar">
+                        <div class="dimension-label">
+                            <span>Minimal</span>
+                            <span>Expressive</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="minimal-expressive-bar"></div>
+                        </div>
+                        <div class="percentage" id="minimal-expressive-percentage"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recommendations">
+                <h4>Style Recommendations:</h4>
+                <div id="style-recommendations"></div>
+            </div>
+            
+            <div class="icons">
+                <h4>Style Icons With Similar Preferences:</h4>
+                <ul id="style-icons"></ul>
+            </div>
+            
+            <div class="compatibility">
+                <h4>Style Compatibility:</h4>
+                <p>You might find style inspiration from:</p>
+                <ul id="compatible-styles"></ul>
+            </div>
+            
+            <div class="save-results">
+                <button id="save-results-btn" class="primary-button">Save My Style Profile</button>
+                <p class="save-note">Your style profile will be saved to your account</p>
+            </div>
+            
+            <div class="download-results">
+                <button id="download-results-btn" class="secondary-button">Download Results</button>
+                <p class="download-note">Save your style profile as a text file</p>
+            </div>
+            
+            <div class="connect-style">
+                <button id="connect-style-btn" class="primary-button">Connect & Style</button>
+                <p class="connect-note">Connect with style buddies and discover style challenges</p>
+            </div>
+        
+            
+            <div class="retake-test">
+                <button id="retake-test-btn" class="secondary-button">Retake the Test</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- Loading indicator for images -->
+<div id="loading-indicator" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;">
+    <div style="text-align: center;">
+        <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #333; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        <p style="margin-top: 10px;">Loading your style profile...</p>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.download-results, .connect-style {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.download-note, .connect-note {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/style_test.js') }}"></script>
+{% endblock %}

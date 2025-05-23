@@ -1,0 +1,76 @@
+<!-- templates/placeholder.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon - वस्त्रनीति</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background-color: #f5f2ee;
+            color: #2c2318;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+        }
+        
+        h1 {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #554a40;
+        }
+        
+        .home-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #2c2318;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+            font-family: inherit;
+        }
+        
+        .home-button:hover {
+            background-color: #3d3024;
+        }
+        
+        .page-name {
+            font-style: italic;
+            color: #888;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Coming Soon</h1>
+        <p class="page-name">{{ request.path }}</p>
+        <p>This section of our website is currently under development. Please check back soon for exciting updates!</p>
+        <a href="{{ url_for('home') }}" class="home-button">Return to Home</a>
+    </div>
+</body>
+</html>

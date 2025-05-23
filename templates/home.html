@@ -1,0 +1,100 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>वस्त्रनीति - Vastraniti</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/paper.css') }}">
+</head>
+<body>
+    <div class="workspace">
+        <div class="site-title">
+            <h1>वस्त्रनीति</h1>
+        </div>
+        
+        <!-- Draggable frame elements -->
+        <div class="papers-container">
+            <!-- Frame 1 - Fashion News (Black frame with newspaper) -->
+            <div class="paper paper-1 news-frame" data-link="{{ url_for('news') }}">
+                <div class="black-frame">
+                    <div class="black-frame-content">
+                        <img src="{{ url_for('static', filename='images/frame1.png') }}" alt="Fashion News">
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Frame 2 - Scrapbook (Alphabet blocks) -->
+            <div class="paper paper-2 scrapbook-frame" data-link="{{ url_for('scrapbook') }}">
+                <div class="frame-container">
+                    <div class="paper-content image-content">
+                        <img src="{{ url_for('static', filename='images/frame2.png') }}" alt="Scrapbook">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Frame 4 - Lookbook -->
+            <div class="paper paper-4 lookbook-frame" data-link="{{ url_for('lookbook') }}">
+                <div class="frame-container">
+                    <div class="paper-content image-content">
+                        <img src="{{ url_for('static', filename='images/frame3.png') }}" alt="Lookbook">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Frame 5 - Events -->
+            <div class="paper paper-5 events-frame" data-link="{{ url_for('events') }}">
+                <div class="frame-container">
+                    <div class="paper-content image-content">
+                        <img src="{{ url_for('static', filename='images/frame5.png') }}" alt="shoeventsp">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Frame 6 - About Us -->
+            <div class="paper paper-6 about-frame" data-link="{{ url_for('about') }}">
+                <div class="frame-container">
+                    <div class="paper-content">
+                        <h2>About Us</h2>
+                        <p>Our story and vision</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Frame 7 - Contact -->
+            <div class="paper paper-7 contact-frame" data-link="{{ url_for('contact') }}">
+                <div class="frame-container">
+                    <div class="paper-content">
+                        <h2>Contact</h2>
+                        <p>Get in touch with our team</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Frame 8 - Shop -->
+            <div class="paper paper-8 shop-frame" data-link="{{ url_for('shop') }}">
+                <div class="frame-container">
+                    <div class="paper-content image-content">
+                        <img src="{{ url_for('static', filename='images/frame4.png') }}" alt="shop">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fashion Assistant Robot (bottom left) -->
+            <div class="robot-container" data-link="{{ url_for('chatbot') }}">
+                <img src="{{ url_for('static', filename='images/bot.gif') }}" alt="Fashion Assistant">
+            </div>
+        </div>
+        
+        <div class="hint">Click and drag frames to arrange them • Click on a frame to navigate</div>
+        
+        <!-- Reset button -->
+        <button class="reset-button" id="reset-button">Reset Frames</button>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/paper.js') }}"></script>
+</body>
+</html>
